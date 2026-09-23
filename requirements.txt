@@ -1,0 +1,6 @@
+groq
+sentence-transformers
+chromadb
+pydantic
+python-dotenv
+tqdm
