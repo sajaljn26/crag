@@ -51,7 +51,7 @@ def main():
     for q in queries:
         print(f"\nQuery: {q}")
         answer, _ = pipeline.run(q)
-        print(f"Answer: {answer}")
+        print(f"Answer: {answer.encode('utf-8', 'replace').decode('utf-8')}")
 
 if __name__ == "__main__":
     main()

@@ -50,7 +50,7 @@ class RAGPipeline:
             trace["metrics"]["total_completion_tokens"] += usage.get("completion_tokens", 0)
             
             # Cost calculation: (prompt / 1M * cost) + (completion / 1M * cost)
-            cost = (usage.get("prompt_tokens", 0) / 1_000_000 * INPUT_TOKEN_COST) + \\
+            cost = (usage.get("prompt_tokens", 0) / 1_000_000 * INPUT_TOKEN_COST) + \
                    (usage.get("completion_tokens", 0) / 1_000_000 * OUTPUT_TOKEN_COST)
             trace["metrics"]["total_cost"] += cost
 
