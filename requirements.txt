@@ -4,3 +4,4 @@ chromadb
 pydantic
 python-dotenv
 tqdm
+rank_bm25

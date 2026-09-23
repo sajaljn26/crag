@@ -18,5 +18,7 @@ class VectorStore:
             query_embeddings=[query_embedding],
             n_results=n_results
         )
-        # results['documents'] is a list of lists
-        return results['documents'][0] if results['documents'] else []
+        # results['documents'] and results['distances'] are lists of lists
+        docs = results['documents'][0] if results['documents'] else []
+        distances = results['distances'][0] if results['distances'] else []
+        return list(zip(docs, distances))

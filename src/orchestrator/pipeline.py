@@ -40,13 +40,14 @@ class RAGPipeline:
         # --- Phase A: Corrective Retrieval Loop ---
         while retrieval_count < MAX_RETRIEVAL_RETRIES:
             retrieval_count += 1
-            documents = self.retriever.retrieve(current_query)
+            documents, metadata = self.retriever.retrieve(current_query)
             is_relevant = self.relevance_grader.grade(current_query, documents)
             
             trace["retrieval_attempts"].append({
                 "attempt": retrieval_count,
                 "query": current_query,
                 "docs": documents,
+                "metadata": metadata,
                 "is_relevant": is_relevant
             })
 
