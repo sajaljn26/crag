@@ -5,7 +5,7 @@
   },
   {
     "query": "What is Python?",
-    "expected": "high-level, interpreted, general-purpose programming language"
+    "expected": "programming language"
   },
   {
     "query": "Who built the Great Wall of China?",

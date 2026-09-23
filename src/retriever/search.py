@@ -42,46 +42,52 @@ class Retriever:
         # Cross-Encoder for reranking
         self.reranker = CrossEncoder('cross-encoder/ms-marco-MiniLM-L-6-v2')
 
-    def retrieve(self, query: str, k: int = TOP_K):
-        # 1. Vector Search (Get top k)
-        query_embedding = self.embedder.embed(query)
-        vector_results = self.store.query(query_embedding, n_results=k) # List of (doc, dist)
-        
-        # 2. BM25 Search (Get top k)
-        bm25_docs, _ = self.bm25_retriever.retrieve(query, k=k)
-        
-        # Merge results and keep track of source
-        # We use a dict to deduplicate. 
-        # Since vector_results and bm25_docs are already sorted, the first appearance 
-        # of a doc is its best rank from that retriever.
+    def retrieve(self, queries: list[str], k: int = TOP_K):
+        # Handle single query input for backward compatibility if needed, 
+        # but pipeline will now pass a list.
+        if isinstance(queries, str):
+            queries = [queries]
+
+        # 1. Gather candidates from all query variants
         merged_results = {}
         
-        # Process vector results first
-        for doc, dist in vector_results:
-            merged_results[doc] = "vector"
+        for q in queries:
+            # Vector Search for this variant
+            query_embedding = self.embedder.embed(q)
+            vector_results = self.store.query(query_embedding, n_results=k) # List of (doc, dist)
             
-        # Process BM25 results
-        for doc in bm25_docs:
-            if doc in merged_results:
-                merged_results[doc] = "both"
-            else:
-                merged_results[doc] = "bm25"
+            # BM25 Search for this variant
+            bm25_docs, _ = self.bm25_retriever.retrieve(q, k=k)
+            
+            # Merge and track source
+            for doc, dist in vector_results:
+                if doc in merged_results:
+                    merged_results[doc] = "both"
+                else:
+                    merged_results[doc] = "vector"
+                    
+            for doc in bm25_docs:
+                if doc in merged_results:
+                    merged_results[doc] = "both"
+                else:
+                    merged_results[doc] = "bm25"
         
-        # Convert to list of dicts
+        # Convert to list of dicts for reranking
         combined = [{"doc": doc, "source": source} for doc, source in merged_results.items()]
         
         # 3. Reranking
         # The user wants to re-score the top 10 candidates.
-        # We take the first 10 from our combined list.
+        # We take the top 10 from the combined set.
         top_candidates = combined[:10]
         if not top_candidates:
             return [], []
 
-        # Prepare pairs for CrossEncoder: (query, document)
-        pairs = [[query, item["doc"]] for item in top_candidates]
+        # The reranker needs the original primary query. 
+        # We'll use the first query in the list (the original one).
+        primary_query = queries[0]
+        pairs = [[primary_query, item["doc"]] for item in top_candidates]
         scores = self.reranker.predict(pairs)
         
-        # Sort by score
         scored_candidates = []
         for i in range(len(top_candidates)):
             scored_candidates.append({

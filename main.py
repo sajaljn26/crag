@@ -50,7 +50,7 @@ def main():
     
     for q in queries:
         print(f"\nQuery: {q}")
-        answer = pipeline.run(q)
+        answer, _ = pipeline.run(q)
         print(f"Answer: {answer}")
 
 if __name__ == "__main__":

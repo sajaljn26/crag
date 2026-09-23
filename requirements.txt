@@ -5,3 +5,4 @@ pydantic
 python-dotenv
 tqdm
 rank_bm25
+duckduckgo_search

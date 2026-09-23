@@ -1,26 +1,31 @@
 RELEVANCE_PROMPT = """
 You are an expert grader. Your task is to evaluate if the retrieved documents are relevant to the user query.
-If the documents contain information that can help answer the query, return 'YES'. 
-Otherwise, return 'NO'.
+
+Be extremely strict. If the documents do not contain the specific information needed to answer the query, they are not relevant.
+
+Return your response in the following JSON format:
+{{
+  "score": (0-100, where 100 is perfectly relevant and 0 is completely irrelevant),
+  "label": ("correct", "ambiguous", or "incorrect"),
+  "reasoning": "explanation for the score and label"
+}}
 
 Query: {query}
 Documents: {context}
-
-Response (YES/NO):"""
+"""
 
 GROUNDEDNESS_PROMPT = """
 You are an expert grader. Your task is to determine if the provided answer is grounded in the retrieved context.
 An answer is grounded if every claim it makes is supported by the context. 
-If the answer contains information NOT present in the context, it is NOT grounded.
-
-Context: {context}
-Answer: {answer}
 
 Return your response in the following JSON format:
 {{
-  "is_grounded": "YES" or "NO",
-  "reason": "explanation of why it is or is not grounded"
+  "score": (0-100, where 100 is perfectly grounded and 0 is completely hallucinated),
+  "reasoning": "explanation of why it is or is not grounded"
 }}
+
+Context: {context}
+Answer: {answer}
 """
 
 REWRITE_PROMPT = """
@@ -31,6 +36,14 @@ Maintain the original intent but expand it with potential keywords or synonyms.
 Original Query: {query}
 
 Rewritten Query:"""
+
+EXPANSION_PROMPT = """
+You are a search query expansion expert. Given a user query, generate 3 diverse but semantically equivalent phrasings of the query to improve retrieval recall.
+
+Return the phrasings as a simple list, one per line, without numbering or bullets.
+
+Query: {query}
+"""
 
 GENERATION_PROMPT = """
 You are a helpful assistant. Answer the user's question strictly using the provided context.
